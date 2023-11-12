@@ -36,7 +36,7 @@ object SimpleExample {
     if (ret.getStatus != R.Status.Success.getCode) throw new RuntimeException("Failed to create index on varchar field! Error: " + ret.getMessage)
     // Call loadCollection() to enable automatically loading data into memory for searching
     milvusClient.loadCollection(LoadCollectionParam.newBuilder.withCollectionName(COLLECTION_NAME).build)
-    System.out.println("Collection created")
+    println("Collection created")
     // Insert 10 records into the collection
     val rows = new java.util.ArrayList[JSONObject]
     for (i <- 1L to 10) {
@@ -53,7 +53,7 @@ object SimpleExample {
     // be searchable immediately. Just a special action in this example.
     // In practice, you don't need to call flush() frequently.
     milvusClient.flush(FlushParam.newBuilder.addCollectionName(COLLECTION_NAME).build)
-    System.out.println("10 entities inserted")
+    println("10 entities inserted")
     // Construct a vector to search top5 similar records, return the book title for us.
     // This vector is equal to the No.3 record, we suppose the No.3 record is the most similar.
     val vector = java.util.Arrays.asList(3.0f, 3.0f, 3.0f, 3.0f)
@@ -63,10 +63,10 @@ object SimpleExample {
     // Here we only input one vector to search, get the result of No.0 vector to print out
     val resultsWrapper = new SearchResultsWrapper(searchRet.getData.getResults)
     val scores = resultsWrapper.getIDScore(0)
-    System.out.println("The result of No.0 target vector:")
+    println("The result of No.0 target vector:")
     import scala.collection.JavaConversions._
     for (score <- scores) {
-      System.out.println(score)
+      println(score)
     }
     // drop the collection if you don't need the collection anymore
     milvusClient.dropCollection(DropCollectionParam.newBuilder.withCollectionName(COLLECTION_NAME).build)
