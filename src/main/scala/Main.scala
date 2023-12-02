@@ -11,14 +11,14 @@ import io.milvus.response._
 import scala.collection.JavaConverters._
 
 
-object Main{
+object Main2{
   private val COLLECTION_NAME = "java_sdk_example_simple"
   private val ID_FIELD = "book_id"
   private val VECTOR_FIELD = "book_intro"
   private val TITLE_FIELD = "book_title"
   private val VECTOR_DIM = 4
 
-  def main(args: Array[String]): Unit = {
+  def main2(args: Array[String]): Unit = {
     // Connect to Milvus server. Replace the "localhost" and port with your Milvus server address.
     val milvusClient = new MilvusServiceClient(ConnectParam.newBuilder.withHost("localhost").withPort(19530).build)
     // set log level, only show errors
