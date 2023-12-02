@@ -1,4 +1,4 @@
-package org.bdad.sparkmilvus;
+package org.bdad.sparkmilvus
 
 import com.alibaba.fastjson.JSONObject
 import io.milvus.client.MilvusServiceClient
@@ -11,7 +11,7 @@ import io.milvus.response._
 import scala.collection.JavaConverters._
 
 
-object SimpleExample {
+object Main{
   private val COLLECTION_NAME = "java_sdk_example_simple"
   private val ID_FIELD = "book_id"
   private val VECTOR_FIELD = "book_intro"
