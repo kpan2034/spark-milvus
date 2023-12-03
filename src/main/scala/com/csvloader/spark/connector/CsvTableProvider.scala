@@ -134,11 +134,12 @@ case class CsvScanPartitionReader(partition: CsvPartition) extends PartitionRead
 
   override def next(): Boolean = {
     processedCount += 1
-//    println(partition.index + " " + processedCount)
     if (csvIterator.hasNext && processedCount <= partition.partitionLength){
-//      csvIterator.next()
       val cols = csvIterator.next().split(",")
-      lastRow = InternalRow(UTF8String.fromString(cols(0)), UTF8String.fromString(cols(1)))
+      // convert each of these columns to a UTF8String that can be used to create an internal row
+      // if there are null values in the input, cols will have fewer columns than expected
+      // so we use padTo() to ensure cols is always of the expected size
+      lastRow = InternalRow(cols.map(x => UTF8String.fromString(x)).padTo(partition.fileSchema.length, null):_*)
       true
     }
     else {
