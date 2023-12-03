@@ -1,26 +1,19 @@
 package com.csvloader.spark.connector
 
 import org.apache.spark.Partition
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.InternalRow
-import org.apache.spark.sql.catalyst.util.CaseInsensitiveMap
-import org.apache.spark.sql.connector.catalog.{Identifier, SupportsRead, SupportsWrite, Table, TableCapability, TableProvider}
+import org.apache.spark.sql.connector.catalog.{SupportsRead, Table, TableCapability, TableProvider}
 import org.apache.spark.sql.connector.expressions.Transform
-import org.apache.spark.sql.connector.read.{Batch, InputPartition, PartitionReader, PartitionReaderFactory, Scan, ScanBuilder}
-import org.apache.spark.sql.connector.write.{LogicalWriteInfo, WriteBuilder}
-import org.apache.spark.sql.execution.datasources.v2.csv.CSVScanBuilder
-import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, DataSourceRegister, RelationProvider, SchemaRelationProvider, StreamSinkProvider}
-import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
+import org.apache.spark.sql.connector.read._
+import org.apache.spark.sql.sources.DataSourceRegister
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.util.CaseInsensitiveStringMap
 import org.apache.spark.unsafe.types.UTF8String
 
 import java.util
-import scala.jdk.CollectionConverters._
-import scala.util.parsing.json.JSON.headOptionTailToFunList
-import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types._
-
 import scala.io.Source
+import scala.jdk.CollectionConverters._
 
 class CsvTableProvider extends TableProvider with DataSourceRegister {
   override def getTable(schema: StructType, partitioning: Array[Transform], properties: util.Map[String, String]): Table = {
@@ -148,7 +141,6 @@ case class CsvScanPartitionReader(partition: CsvPartition) extends PartitionRead
       false
     }
   }
-  import org.apache.spark.unsafe.types.UTF8String
 
   override def get(): InternalRow = {
     assert(!closed)
