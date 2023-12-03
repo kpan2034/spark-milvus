@@ -131,10 +131,12 @@ case class CsvScanPartitionReader(partition: CsvPartition) extends PartitionRead
   private val bufferedSource= Source.fromFile(partition.filename)
   private val csvIterator = bufferedSource.getLines.drop(1+partition.start)
   private var processedCount: Int = 0
+  private var closed: Boolean = false
 
   override def next(): Boolean = {
     processedCount += 1
     if (csvIterator.hasNext && processedCount <= partition.partitionLength){
+      assert(!closed)
       val cols = csvIterator.next().split(",")
       // convert each of these columns to a UTF8String that can be used to create an internal row
       // if there are null values in the input, cols will have fewer columns than expected
@@ -149,12 +151,16 @@ case class CsvScanPartitionReader(partition: CsvPartition) extends PartitionRead
   import org.apache.spark.unsafe.types.UTF8String
 
   override def get(): InternalRow = {
+    assert(!closed)
     lastRow
-//    InternalRow(UTF8String.fromString("hello"), UTF8String.fromString("bye"))
   }
 
   override def close(): Unit = {
-//    bufferedSource.close()
+    if(!closed) {
+      closed = true
+      println("closing source")
+      bufferedSource.close()
+    }
   }
 }
 
