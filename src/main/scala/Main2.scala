@@ -18,7 +18,7 @@ object Main{
       .format("com.csvloader.spark.connector.CsvTableProvider")
       .option("filename", "test.csv")
       .load()
-//    println(df.rdd.getNumPartitions)
+    println("Num Partitions: " + df.rdd.getNumPartitions)
     df.show()
   }
 }

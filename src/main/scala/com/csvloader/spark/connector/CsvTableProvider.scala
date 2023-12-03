@@ -53,10 +53,7 @@ case class CsvTable(filename: String) extends Table with SupportsRead {
   def getSchema: StructType = {
     // First open the file
     val bufferedSource = Source.fromFile(filename)
-    println("okay made it here")
     val headers = bufferedSource.getLines().take(1).mkString.split(",").toSeq
-    println("okay made it here too")
-    println(headers)
     bufferedSource.close()
     // Just read everything in as a String - do type casts manually
     val customSchema : StructType = StructType(headers.map(x => StructField(x, StringType, nullable=true)))
@@ -95,17 +92,24 @@ case class CsvScan(filename: String, fileSchema: StructType) extends Scan {
 }
 
 case class CsvBatch(filename: String, fileSchema: StructType) extends Batch {
+  private def getFileSize() = {
+    val bufferedSource = Source.fromFile(filename)
+    val len = bufferedSource.getLines().size - 1
+    bufferedSource.close()
+    len
+  }
+
   private lazy val inputPartitions : Seq[CsvPartition] = {
-    // TODO figure out file size
-//    val maxLen: Int = 10
-//    val stepSize: Int = 10
-//    // Now break into partitions of fixed length
-//    for ((start, idx) <- (0 to maxLen by stepSize).zip(0 to maxLen/stepSize))
-//      yield CsvPartition(idx, start, stepSize, filename, fileSchema)
-    Seq(CsvPartition(0, 0, 10, filename, fileSchema))
+    val maxLen: Int = getFileSize()
+    val stepSize: Int = 3
+    // Now break into partitions of fixed length
+    for ((start, idx) <- (0 until maxLen by stepSize).zip(0 to maxLen/stepSize))
+      yield CsvPartition(idx, start, stepSize, filename, fileSchema)
   }
 
   override def planInputPartitions(): Array[InputPartition] = {
+    inputPartitions.toArray.foreach(x => print(x + " "))
+    println()
     inputPartitions.toArray
   }
 
@@ -125,19 +129,16 @@ case class CsvScanPartitionReader(partition: CsvPartition) extends PartitionRead
   private var lastRow: InternalRow = _
 
   private val bufferedSource= Source.fromFile(partition.filename)
-  private val csvIterator = bufferedSource.getLines.drop(1)
-  private var count: Int = 0
+  private val csvIterator = bufferedSource.getLines.drop(1+partition.start)
+  private var processedCount: Int = 0
 
   override def next(): Boolean = {
-    count += 1
-    println(partition.index + " " + count)
-    if (csvIterator.hasNext){
+    processedCount += 1
+//    println(partition.index + " " + processedCount)
+    if (csvIterator.hasNext && processedCount <= partition.partitionLength){
 //      csvIterator.next()
       val cols = csvIterator.next().split(",")
       lastRow = InternalRow(UTF8String.fromString(cols(0)), UTF8String.fromString(cols(1)))
-      println(lastRow)
-      println(csvIterator)
-      println(bufferedSource)
       true
     }
     else {
