@@ -1,5 +1,6 @@
 package com.milvus.spark.connector
 
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.connector.catalog.{SupportsRead, Table, TableCapability, TableProvider}
 import org.apache.spark.sql.connector.expressions.Transform
 import org.apache.spark.sql.connector.read.ScanBuilder
@@ -11,27 +12,29 @@ import java.util
 import scala.io.Source
 import scala.jdk.CollectionConverters._
 
-case class MilvusTable() extends Table with SupportsRead {
-  override def name(): String = "a csv file appears"
+case class MilvusTable(conf: MilvusConnectorConf) extends Table with SupportsRead {
+  override def name(): String = "a milvus collection appears"
 
-  private lazy val fileSchema = {
+  private lazy val collectionSchema: StructType = {
     getSchema
   }
 
+  private lazy val client = {
+    MilvusClient(conf.host, conf.port)
+  }
+
   def getSchema: StructType = {
-    // First open the file
-    val headers = Seq("id", "val")
-    val customSchema : StructType = StructType(headers.map(x => StructField(x, StringType, nullable=true)))
-    customSchema
+    client.describeCollection(conf.collectionName)
   }
 
   override def schema(): StructType = {
-    fileSchema
+   collectionSchema
   }
 
+  // todo: look into what capabilities are
   override def capabilities(): util.Set[TableCapability] = Set(TableCapability.BATCH_READ).asJava
 
   override def newScanBuilder(options: CaseInsensitiveStringMap): ScanBuilder = {
-    MilvusScanBuilder(fileSchema)
+    MilvusScanBuilder(conf, collectionSchema)
   }
 }
