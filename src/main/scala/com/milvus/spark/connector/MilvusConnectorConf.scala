@@ -30,7 +30,7 @@ object MilvusConnectorConf {
   )
 
   private val CollectionNameParam = ConfigParameter[String](
-    name = "spark.milvus.collectionName",
+    name = "spark.milvus.collectionname",
     default = "default",
     description = "Milvus Collection Name"
   )
