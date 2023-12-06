@@ -25,12 +25,15 @@ class MilvusClient(host: String, port: Int) {
   private lazy val client: MilvusServiceClient = {
     val milvusClient = new MilvusServiceClient(ConnectParam.newBuilder.withHost(host).withPort(port).build)
     milvusClient.setLogLevel(LogLevel.Error)
+    println("Created new MilvusServiceClient")
     milvusClient
   }
 
   def describeCollection(collectionName: String): StructType = {
+    println("describe collection called")
     val param = DescribeCollectionParam.newBuilder.withCollectionName(collectionName).build
     val response = client.describeCollection(param)
+    println("describe collection response status: " + response.getStatus)
     if (response.getStatus != R.Status.Success.getCode) {
       println(response.getMessage)
       -1
@@ -38,6 +41,7 @@ class MilvusClient(host: String, port: Int) {
     val wrapper = new DescCollResponseWrapper(response.getData)
     val fields = wrapper.getFields.map(MilvusClient.fieldToStructMapper).toArray
     val collectionSchema: StructType = DataTypes.createStructType(fields)
+    println("describe collection: collection schema: " + collectionSchema)
     collectionSchema
   }
 
@@ -51,6 +55,11 @@ class MilvusClient(host: String, port: Int) {
     val wrapper = new GetCollStatResponseWrapper(response.getData)
     wrapper.getRowCount
   }
+
+  def connect() : Unit = {
+    println("connect called")
+    client
+  }
 }
 
 object MilvusClient {
@@ -58,11 +67,12 @@ object MilvusClient {
   private val DEFAULT_PORT = 19530
 
   def apply(): MilvusClient = {
-    MilvusClient(DEFAULT_HOST, DEFAULT_PORT)
+    new MilvusClient(DEFAULT_HOST, DEFAULT_PORT)
   }
 
   def apply(host: String, port: Int): MilvusClient = {
-    MilvusClient(host, port)
+    println("MilvusClient.apply called")
+    new MilvusClient(host, port)
   }
 
   private def fieldToStructMapper(field: FieldType): StructField = {
@@ -70,6 +80,7 @@ object MilvusClient {
     val dt = field.getDataType
     val structFieldType = dt match {
       case DataType.Array => DataTypes.createArrayType(mapToScalaType(field.getElementType))
+      case DataType.FloatVector | DataType.Float16Vector => DataTypes.createArrayType(DataTypes.FloatType)
       case _ => mapToScalaType(dt)
       }
     val structField: StructField = DataTypes.createStructField(name, structFieldType, true)
@@ -88,7 +99,7 @@ object MilvusClient {
       case DataType.JSON => throw new IllegalArgumentException("JSON type not supported")
       // TODO: figure out how to handle vector data -- Array might be the way to go
       case DataType.BinaryVector => throw new IllegalArgumentException("Binary vector type not supported")
-      case DataType.FloatVector | DataType.Float16Vector => throw new IllegalArgumentException("Float vector type not supported")
+//      case DataType.FloatVector | DataType.Float16Vector => throw new IllegalArgumentException("Float vector type not supported")
       case _ => throw new IllegalArgumentException("Unknown data type:" + dt)
     }
   }
