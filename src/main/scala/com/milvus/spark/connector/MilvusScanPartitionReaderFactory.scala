@@ -6,6 +6,6 @@ import org.apache.spark.sql.types.StructType
 
 case class MilvusScanPartitionReaderFactory(conf: MilvusConnectorConf, collectionSchema: StructType) extends PartitionReaderFactory{
   override def createReader(partition: InputPartition): PartitionReader[InternalRow] = {
-    MilvusScanPartitionReader(partition)
+    MilvusScanPartitionReader(conf, partition)
   }
 }

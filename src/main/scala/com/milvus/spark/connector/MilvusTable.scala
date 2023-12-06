@@ -24,7 +24,9 @@ case class MilvusTable(conf: MilvusConnectorConf) extends Table with SupportsRea
   }
 
   def getSchema: StructType = {
-    client.describeCollection(conf.collectionName)
+    val sc = client.describeCollection(conf.collectionName)
+    client.close()
+    sc
   }
 
   override def schema(): StructType = {
@@ -35,6 +37,7 @@ case class MilvusTable(conf: MilvusConnectorConf) extends Table with SupportsRea
   override def capabilities(): util.Set[TableCapability] = Set(TableCapability.BATCH_READ).asJava
 
   override def newScanBuilder(options: CaseInsensitiveStringMap): ScanBuilder = {
-    MilvusScanBuilder(conf, collectionSchema)
+    val scanBuilder = MilvusScanBuilder(conf, collectionSchema)
+    scanBuilder
   }
 }
