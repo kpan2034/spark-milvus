@@ -3,12 +3,13 @@ package com.milvus.spark.connector
 import io.milvus.client.MilvusServiceClient
 import io.milvus.grpc.DataType
 import io.milvus.param.collection.{DescribeCollectionParam, FieldType, GetCollectionStatisticsParam}
+import io.milvus.param.dml.QueryParam
 import io.milvus.param.{ConnectParam, LogLevel, R}
-import io.milvus.response.{DescCollResponseWrapper, GetCollStatResponseWrapper}
+import io.milvus.response.{DescCollResponseWrapper, GetCollStatResponseWrapper, QueryResultsWrapper}
 import org.apache.spark.sql.types.{DataTypes, StructField, StructType}
 
-import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
-import scala.jdk.CollectionConverters.asScalaBufferConverter
+import scala.collection.convert.ImplicitConversions.{`collection AsScalaIterable`, `map AsScala`}
+import scala.jdk.CollectionConverters.seqAsJavaListConverter
 
 /*
 This is a wrapper class for the Milvus Java SDK.
@@ -56,9 +57,39 @@ class MilvusClient(host: String, port: Int) {
     wrapper.getRowCount
   }
 
+  def queryCollection(collectionName: String, fieldsToReturn: List[String], query: String = "") = {
+    println("query collection called")
+    val param = QueryParam.newBuilder
+      .withCollectionName(collectionName)
+      .withExpr("id != 0")
+      .withOutFields(fieldsToReturn.asJava)
+      // TODO: remove limit, this is done for testing purposes
+      .build
+
+    if (query != "") {
+      // TODO: figure out how to handle query
+    }
+
+    val response = client.query(param)
+    println("query collection response status: " + response.getStatus)
+    if (response.getStatus != R.Status.Success.getCode) {
+      println(response.getMessage)
+      -1
+    }
+
+    val wrapper = new QueryResultsWrapper(response.getData)
+    val records = wrapper.getRowRecords()
+    records.toSeq // Make it immutable, does this increase performance?
+  }
+
   def connect() : Unit = {
     println("connect called")
     client
+  }
+
+  def close() : Unit = {
+    println("close called")
+    client.close()
   }
 }
 
@@ -80,7 +111,7 @@ object MilvusClient {
     val dt = field.getDataType
     val structFieldType = dt match {
       case DataType.Array => DataTypes.createArrayType(mapToScalaType(field.getElementType))
-      case DataType.FloatVector | DataType.Float16Vector => DataTypes.createArrayType(DataTypes.FloatType)
+      case DataType.FloatVector | DataType.Float16Vector => DataTypes.createArrayType(DataTypes.DoubleType)
       case _ => mapToScalaType(dt)
       }
     val structField: StructField = DataTypes.createStructField(name, structFieldType, true)
@@ -91,7 +122,8 @@ object MilvusClient {
     // Ref: https://milvus.io/docs/schema.md#Supported-data-types
     dt match {
       case DataType.Bool => DataTypes.BooleanType
-      case DataType.Int8 | DataType.Int16 | DataType.Int32 | DataType.Int64 => DataTypes.IntegerType
+      case DataType.Int8 | DataType.Int16 | DataType.Int32 => DataTypes.IntegerType
+      case DataType.Int64 => DataTypes.LongType
       case DataType.Float => DataTypes.FloatType
       case DataType.Double => DataTypes.DoubleType
       case DataType.String | DataType.VarChar => DataTypes.StringType
