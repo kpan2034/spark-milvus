@@ -21,7 +21,17 @@ libraryDependencies ++= Seq(
   "io.milvus" % "milvus-sdk-java" % "2.3.3",
   "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
   "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion,
-  "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf"
+  "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
+  "org.scalatest" %% "scalatest" % "3.2.17" % "test"
 )
 
-dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % "2.10.0"
+dependencyOverrides ++= Seq(
+  "com.fasterxml.jackson.core" % "jackson-databind" % "2.10.0",
+  "io.netty" % "netty-all" % "4.1.72.Final",
+  "io.netty" % "netty-buffer" % "4.1.72.Final"
+)
+
+excludeDependencies ++= Seq(
+    ExclusionRule(organization = "io.netty.buffer")
+)
+
