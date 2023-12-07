@@ -67,3 +67,5 @@ jitwatch.out
 project/**/metals.sbt
 
 .bsp
+New_Medium_Data.csv
+jars/

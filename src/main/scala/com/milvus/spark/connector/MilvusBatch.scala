@@ -3,6 +3,9 @@ package com.milvus.spark.connector
 import org.apache.spark.sql.connector.read.{Batch, InputPartition, PartitionReaderFactory}
 import org.apache.spark.sql.types.StructType
 
+import scala.collection.mutable
+import scala.collection.mutable.Seq
+
 case class MilvusBatch(conf: MilvusConnectorConf, collectionSchema: StructType) extends Batch{
   private lazy val inputPartitions: Seq[MilvusPartition] = {
     getInputPartitionInformation()
@@ -15,19 +18,33 @@ case class MilvusBatch(conf: MilvusConnectorConf, collectionSchema: StructType) 
     MilvusScanPartitionReaderFactory(conf, collectionSchema)
   }
 
+  private lazy val client = {
+    MilvusClient(conf.host, conf.port)
+  }
+
   private def getInputPartitionInformation(): Seq[MilvusPartition] = {
-    // TODO: figure out partition planning for the query
+    val numPartitions: Int = conf.numPartitions
 
-    // 1. Get number of rows in the collection (client.getCollectionRowCount)
-    // and then then split partition accordingly (e.g. 1000 rows per partition)
-    // in this case, MilvusPartition requires start and partitionLength
-    // OR figure out how primary key value is distributed
-    // in this case MilvusPartition will require Array[PrimaryKeyValues]
+    val primaryKeys: Array[Long] = client.queryCollection(collectionName = conf.collectionName, fieldsToReturn = List("id")).map(_.get("id").asInstanceOf[Long]).toArray
+    val sortedPrimaryKeys = primaryKeys.sorted
+    val numRecordsPerPartition = sortedPrimaryKeys.length/numPartitions
 
-    // 2. Split it into a number of partitions
-    // side TODO: how do you know how *many* partitions to split them into -- is it user specified? or is there a default?
+    var partitions: mutable.Seq[MilvusPartition] = mutable.Seq()
 
-    // 3. Build and return sequence (or array) of MilvusPartition objects
-    Seq(MilvusPartition(0, 0, 1, collectionSchema))
+    for(i <- 0 until numPartitions-1) {
+      val startKey = sortedPrimaryKeys.apply(i*numRecordsPerPartition)
+      val endKey = sortedPrimaryKeys.apply((i+1)*numRecordsPerPartition - 1)
+
+      partitions = partitions :+ MilvusPartition(i, startKey, endKey, collectionSchema)
+    }
+
+    partitions = partitions :+ MilvusPartition(
+      numPartitions-1,
+      sortedPrimaryKeys.apply((numPartitions-1)*numRecordsPerPartition),
+      sortedPrimaryKeys.apply(sortedPrimaryKeys.length-1),
+      collectionSchema
+    )
+
+    partitions
   }
 }

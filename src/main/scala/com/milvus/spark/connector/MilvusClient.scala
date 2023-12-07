@@ -61,7 +61,7 @@ class MilvusClient(host: String, port: Int) {
     println("query collection called")
     val param = QueryParam.newBuilder
       .withCollectionName(collectionName)
-      .withExpr("id != 0")
+      .withExpr("id >= 0") // TODO: find primary key from schema
       .withOutFields(fieldsToReturn.asJava)
       // TODO: remove limit, this is done for testing purposes
       .build
