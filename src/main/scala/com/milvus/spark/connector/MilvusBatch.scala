@@ -25,7 +25,11 @@ case class MilvusBatch(conf: MilvusConnectorConf, collectionSchema: StructType) 
   private def getInputPartitionInformation(): Seq[MilvusPartition] = {
     val numPartitions: Int = conf.numPartitions
 
-    val primaryKeys: Array[Long] = client.queryCollection(collectionName = conf.collectionName, fieldsToReturn = List("id")).map(_.get("id").asInstanceOf[Long]).toArray
+    val primaryKeys: Array[Long] = client.queryCollection(
+      collectionName = conf.collectionName,
+      fieldsToReturn = List("id"),
+      query=conf.predicateFilter
+    ).map(_.get("id").asInstanceOf[Long]).toArray
     val sortedPrimaryKeys = primaryKeys.sorted
     val numRecordsPerPartition = sortedPrimaryKeys.length/numPartitions
 

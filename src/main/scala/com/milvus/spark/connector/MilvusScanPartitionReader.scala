@@ -21,9 +21,9 @@ case class MilvusScanPartitionReader(conf: MilvusConnectorConf, partition: Input
   // GC is probably smart enough to know not to clean up the underlying data
   val startKey: Long = partition.asInstanceOf[MilvusPartition].startKey
   val endKey: Long = partition.asInstanceOf[MilvusPartition].endKey
-  private val primaryKeyFilter = "id>=" + startKey.toString + "and id<=" + endKey.toString  // TODO: change id to PK
+  private val filter = "id>=" + startKey.toString + " and id<=" + endKey.toString + " and " + conf.predicateFilter // TODO: change id to PK
   private lazy val records = {
-    client.queryCollection(conf.collectionName, collectionSchema.fieldNames.toList, query = primaryKeyFilter) // TODO: required fields as user input
+    client.queryCollection(conf.collectionName, collectionSchema.fieldNames.toList, query = filter)
   }
 
   private lazy val iterator = {

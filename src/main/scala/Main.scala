@@ -35,7 +35,24 @@ object Main{
     df.show()
     println(df.count())
   }
+
+  def test3(): Unit = {
+    val spark = SparkSession.builder()
+        .appName("Milvus Loader")
+        .master("local[4]")
+        .getOrCreate()
+
+    val df = spark.read
+        .format("com.milvus.spark.connector.MilvusTableProvider")
+        .option("spark.milvus.collectionName", "search_article_in_medium")
+        .option("spark.milvus.numPartitions", 3)
+        .option("spark.milvus.predicateFilter", "publication==\"The Startup\"")
+        .load()
+    println("Num Partitions: " + df.rdd.getNumPartitions)
+    df.show()
+    println(df.count())
+  }
   def main(args: Array[String]): Unit = {
-    test2()
+    test3()
   }
 }
