@@ -24,7 +24,7 @@ case class MilvusTable(conf: MilvusConnectorConf) extends Table with SupportsRea
   }
 
   def getSchema: StructType = {
-    val sc = client.describeCollection(conf.collectionName)
+    val sc = StructType(client.describeCollection(conf.collectionName).filter(field => conf.fields.contains(field.name)))
     client.close()
     sc
   }

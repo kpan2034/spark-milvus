@@ -41,34 +41,34 @@ def create_milvus_collection(collection_name, dim):
     return collection
 
 collection = create_milvus_collection('search_article_in_medium', 768)
-
-# Insert to the collection
-from towhee import ops, pipe, DataCollection
-
-insert_pipe = (pipe.input('df')
-                   .flat_map('df', 'data', lambda df: df.values.tolist())
-                   .map('data', 'res', ops.ann_insert.milvus_client(host='127.0.0.1', 
-                                                                    port='19530',
-                                                                    collection_name='search_article_in_medium'))
-                   .output('res')
-)
-
-_ = insert_pipe(df)
-
-# Load collection and view number of entitites
-collection.load()
-print(collection.num_entities)
-
-# Verify everything is gucci by performing example search
-import numpy as np
-
-search_pipe = (pipe.input('query')
-                    .map('query', 'vec', ops.text_embedding.dpr(model_name="facebook/dpr-ctx_encoder-single-nq-base"))
-                    .map('vec', 'vec', lambda x: x / np.linalg.norm(x, axis=0))
-                    .flat_map('vec', ('id', 'score'), ops.ann_search.milvus_client(host='127.0.0.1', 
-                                                                                   port='19530',
-                                                                                   collection_name='search_article_in_medium'))  
-                    .output('query', 'id', 'score')
-               )
-res = search_pipe('funny python demo')
-DataCollection(res).show()
+collection.insert(df)
+# # Insert to the collection
+# from towhee import ops, pipe, DataCollection
+#
+# insert_pipe = (pipe.input('df')
+#                    .flat_map('df', 'data', lambda df: df.values.tolist())
+#                    .map('data', 'res', ops.ann_insert.milvus_client(host='127.0.0.1',
+#                                                                     port='19530',
+#                                                                     collection_name='search_article_in_medium'))
+#                    .output('res')
+# )
+#
+# _ = insert_pipe(df)
+#
+# # Load collection and view number of entitites
+# collection.load()
+# print(collection.num_entities)
+#
+# # Verify everything is gucci by performing example search
+# import numpy as np
+#
+# search_pipe = (pipe.input('query')
+#                     .map('query', 'vec', ops.text_embedding.dpr(model_name="facebook/dpr-ctx_encoder-single-nq-base"))
+#                     .map('vec', 'vec', lambda x: x / np.linalg.norm(x, axis=0))
+#                     .flat_map('vec', ('id', 'score'), ops.ann_search.milvus_client(host='127.0.0.1',
+#                                                                                    port='19530',
+#                                                                                    collection_name='search_article_in_medium'))
+#                     .output('query', 'id', 'score')
+#                )
+# res = search_pipe('funny python demo')
+# DataCollection(res).show()
