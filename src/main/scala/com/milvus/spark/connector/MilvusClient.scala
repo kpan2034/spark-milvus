@@ -57,18 +57,13 @@ class MilvusClient(host: String, port: Int) {
     wrapper.getRowCount
   }
 
-  def queryCollection(collectionName: String, fieldsToReturn: List[String], query: String = "") = {
+  def queryCollection(collectionName: String, fieldsToReturn: List[String], query: String = "id >= 0") = { // TODO: find primary key from schema
     println("query collection called")
     val param = QueryParam.newBuilder
       .withCollectionName(collectionName)
-      .withExpr("id >= 0") // TODO: find primary key from schema
+      .withExpr(query)
       .withOutFields(fieldsToReturn.asJava)
-      // TODO: remove limit, this is done for testing purposes
       .build
-
-    if (query != "") {
-      // TODO: figure out how to handle query
-    }
 
     val response = client.query(param)
     println("query collection response status: " + response.getStatus)

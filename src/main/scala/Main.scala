@@ -29,7 +29,7 @@ object Main{
     val df = spark.read
         .format("com.milvus.spark.connector.MilvusTableProvider")
         .option("spark.milvus.collectionName", "search_article_in_medium")
-        .option("spark.milvus.numPartitions", 2)
+        .option("spark.milvus.numPartitions", 3)
         .load()
     println("Num Partitions: " + df.rdd.getNumPartitions)
     df.show()
