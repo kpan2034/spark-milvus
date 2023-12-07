@@ -23,7 +23,7 @@ class MilvusTableProvider extends TableProvider with DataSourceRegister {
     MilvusTable(conf)
   }
 
-  // todo: get shortName to work correctly with spark.read.format()
+  // TODO: get shortName to work correctly with spark.read.format()
   override def shortName(): String = "spark-milvus"
 
 }

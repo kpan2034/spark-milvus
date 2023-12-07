@@ -12,7 +12,8 @@ case class MilvusConnectorConf(
                               port:Int = MilvusConnectorConf.PortParam.default,
                               collectionName:String = MilvusConnectorConf.CollectionNameParam.default,
                               numPartitions: Int = MilvusConnectorConf.NumPartitionsParam.default,
-                              predicateFilter: String = MilvusConnectorConf.PredicateFilterParam.default
+                              predicateFilter: String = MilvusConnectorConf.PredicateFilterParam.default,
+                              fields: Array[String] = Array[String]()
                               ) {
 }
 
@@ -49,12 +50,18 @@ object MilvusConnectorConf {
     description = "Predicate for filtering data in milvus"
   )
 
+  private val FieldsParam = ConfigParameter[String](
+    name = "spark.milvus.fields",
+    default = "",
+    description = "Required fields to be queried"
+  )
   def parseOptions(options: Map[String, String]): MilvusConnectorConf = {
     val host: String = options.getOrElse(HostParam.name, HostParam.default)
     val port: Int = options.getOrElse(PortParam.name, PortParam.default).asInstanceOf[Int]
     val collectionName: String = options.getOrElse(CollectionNameParam.name, CollectionNameParam.default)
     val numPartitions: Int = options.getOrElse(NumPartitionsParam.name, NumPartitionsParam.default).asInstanceOf[String].toInt
     val predicateFilterParam: String = options.getOrElse(PredicateFilterParam.name, PredicateFilterParam.default)
-    MilvusConnectorConf(host, port, collectionName, numPartitions, predicateFilterParam)
+    val fields: Array[String] = options.getOrElse(FieldsParam.name, FieldsParam.default).split(",").map(_.trim)
+    MilvusConnectorConf(host, port, collectionName, numPartitions, predicateFilterParam, fields)
   }
 }

@@ -21,9 +21,10 @@ case class MilvusScanPartitionReader(conf: MilvusConnectorConf, partition: Input
   // GC is probably smart enough to know not to clean up the underlying data
   val startKey: Long = partition.asInstanceOf[MilvusPartition].startKey
   val endKey: Long = partition.asInstanceOf[MilvusPartition].endKey
-  private val filter = "id>=" + startKey.toString + " and id<=" + endKey.toString + " and " + conf.predicateFilter // TODO: change id to PK
+  private lazy val filter = "id>=" + startKey.toString + " and id<=" + endKey.toString + " and " + conf.predicateFilter // TODO: change id to PK
+  private lazy val reqFields = if (conf.fields.isEmpty) collectionSchema.fieldNames.toList else conf.fields.toList
   private lazy val records = {
-    client.queryCollection(conf.collectionName, collectionSchema.fieldNames.toList, query = filter)
+    client.queryCollection(conf.collectionName, reqFields, query = filter)
   }
 
   private lazy val iterator = {
@@ -61,7 +62,6 @@ case class MilvusScanPartitionReader(conf: MilvusConnectorConf, partition: Input
 //    }
 //  }
 
-  // TODO: implement next and get
   // Important: need to figure out how to convert data in Milvus to InternalRow correctly
   override def next(): Boolean = {
     if (iterator.hasNext) {
