@@ -1,7 +1,9 @@
 import pandas as pd
 from pymilvus import connections, FieldSchema, CollectionSchema, DataType, Collection, utility
 
-connections.connect(host='127.0.0.1', port='19530')
+uri = "https://in03-4deca087036f63f.api.gcp-us-west1.zillizcloud.com"
+token = "33a6ca21413fd126785a65baa24f2f09afd4976ab61004a60429ebb43d66e5fb6b19d80effac2f93d3a1f5a60d06c0121ff50010"
+connections.connect("default", uri=uri, token=token)
 
 collection_name = 'search_article_in_medium'
 print(utility.has_collection(collection_name))

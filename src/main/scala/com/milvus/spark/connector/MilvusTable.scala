@@ -20,7 +20,7 @@ case class MilvusTable(conf: MilvusConnectorConf) extends Table with SupportsRea
   }
 
   private lazy val client = {
-    MilvusClient(conf.host, conf.port)
+    MilvusClient(conf.uri, conf.port, conf.token)
   }
 
   def getSchema: StructType = {

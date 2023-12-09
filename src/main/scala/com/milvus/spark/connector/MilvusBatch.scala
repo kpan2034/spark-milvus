@@ -19,7 +19,7 @@ case class MilvusBatch(conf: MilvusConnectorConf, collectionSchema: StructType) 
   }
 
   private lazy val client = {
-    MilvusClient(conf.host, conf.port)
+    MilvusClient(conf.uri, conf.port, conf.token)
   }
 
   private def getInputPartitionInformation(): Seq[MilvusPartition] = {

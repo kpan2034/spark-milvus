@@ -21,10 +21,13 @@ todo: either a more user-friendly error should be returned to the caller
  */
 
 
-class MilvusClient(host: String, port: Int) {
+class MilvusClient(uri: String, port: Int, token: String="") {
 
   private lazy val client: MilvusServiceClient = {
-    val milvusClient = new MilvusServiceClient(ConnectParam.newBuilder.withHost(host).withPort(port).build)
+    var connectParamBuilder = ConnectParam.newBuilder.withUri(uri).withPort(port);
+    if (token.nonEmpty)
+      connectParamBuilder = connectParamBuilder.withToken(token)
+    val milvusClient = new MilvusServiceClient(connectParamBuilder.build)
     milvusClient.setLogLevel(LogLevel.Error)
     println("Created new MilvusServiceClient")
     milvusClient
@@ -89,16 +92,16 @@ class MilvusClient(host: String, port: Int) {
 }
 
 object MilvusClient {
-  private val DEFAULT_HOST = "localhost"
+  private val DEFAULT_URI = "http://127.0.0.1"
   private val DEFAULT_PORT = 19530
 
   def apply(): MilvusClient = {
-    new MilvusClient(DEFAULT_HOST, DEFAULT_PORT)
+    new MilvusClient(DEFAULT_URI, DEFAULT_PORT)
   }
 
-  def apply(host: String, port: Int): MilvusClient = {
+  def apply(uri: String, port: Int, token: String=""): MilvusClient = {
     println("MilvusClient.apply called")
-    new MilvusClient(host, port)
+    new MilvusClient(uri, port, token)
   }
 
   private def fieldToStructMapper(field: FieldType): StructField = {
