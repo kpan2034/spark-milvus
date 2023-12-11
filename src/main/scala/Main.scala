@@ -116,14 +116,18 @@ object Main{
 ////      .option("spark.milvus.predicateFilter", "publication==\"The Startup\"")
 //      .option("spark.milvus.fields", "id,reading_time, publication,claps  ")
 //      .load()
-    println(spark.time(spark.read
+    val df1 = spark.read
       .format("com.milvus.spark.connector.MilvusTableProvider")
       .option("spark.milvus.uri", "https://in03-4deca087036f63f.api.gcp-us-west1.zillizcloud.com")
       .option("spark.milvus.token", "33a6ca21413fd126785a65baa24f2f09afd4976ab61004a60429ebb43d66e5fb6b19d80effac2f93d3a1f5a60d06c0121ff50010")
       .option("spark.milvus.collectionName", "search_article_in_medium")
-      .option("spark.milvus.numPartitions", 3)
-//      .option("spark.milvus.predicateFilter", "publication==\"The Startup\"")
-      .option("spark.milvus.fields", "id,reading_time, publication,claps  ").load().show(5, false)
+      .option("spark.milvus.numPartitions", 6)
+//            .option("spark.milvus.predicateFilter", "publication==\"The Startup\"")
+      .option("spark.milvus.fields", "id,reading_time, publication,claps  ")
+      .load()
+      .where("claps >= 10000")
+    println(spark.time(df1
+        .show(500, false)
       ))
 //      println(spark.time(spark.read
 //        .format("com.milvus.spark.connector.MilvusTableProvider")
@@ -141,12 +145,33 @@ object Main{
 //      println(s"Partition $index has $count records.")
 //    }
   }
+
+  def testManagedMilvus2(): Unit = {
+    val spark = SparkSession.builder()
+      .appName("Milvus Loader")
+      .master("local[*]")
+      .getOrCreate()
+
+    val df1 = spark.read
+      .format("com.milvus.spark.connector.MilvusTableProvider")
+      .option("spark.milvus.uri", "https://in03-4deca087036f63f.api.gcp-us-west1.zillizcloud.com")
+      .option("spark.milvus.token", "33a6ca21413fd126785a65baa24f2f09afd4976ab61004a60429ebb43d66e5fb6b19d80effac2f93d3a1f5a60d06c0121ff50010")
+      .option("spark.milvus.collectionName", "search_article_in_medium")
+      .option("spark.milvus.numPartitions", 2)
+      .option("spark.milvus.predicateFilter", "claps >= 10000")
+      .option("spark.milvus.fields", "id,reading_time, publication,claps  ")
+      .load()
+//      .where("claps >= 10000")
+    println(spark.time(df1
+      .show(500, false)
+    ))
+  }
   def main(args: Array[String]): Unit = {
 //    val spark = SparkSession.builder()
 //      .appName("Milvus Loader")
 //      .master("local[4]")
 //      .getOrCreate()
 //    spark.time(measureSdkTime())
-    testManagedMilvus()
+    testManagedMilvus2()
   }
 }
