@@ -1,0 +1,17 @@
+col1,col2
+hello,this
+is,dummy
+data,that
+I,generated
+for,testing
+a,custom
+Csv,loader
+in,spark
+if,you
+see,this
+then,it
+works,correctly
+but,what
+if,I
+add,more
+lines,
