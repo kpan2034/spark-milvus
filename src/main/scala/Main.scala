@@ -174,15 +174,6 @@ object Main{
       .master("local[*]")
       .getOrCreate()
 
-//    val df = spark.read
-//      .format("com.milvus.spark.connector.MilvusTableProvider")
-//      .option("spark.milvus.uri", "https://in03-4deca087036f63f.api.gcp-us-west1.zillizcloud.com")
-//      .option("spark.milvus.token", "33a6ca21413fd126785a65baa24f2f09afd4976ab61004a60429ebb43d66e5fb6b19d80effac2f93d3a1f5a60d06c0121ff50010")
-//      .option("spark.milvus.collectionName", "search_article_in_medium")
-//      .option("spark.milvus.numPartitions", 6)
-////      .option("spark.milvus.predicateFilter", "publication==\"The Startup\"")
-//      .option("spark.milvus.fields", "id,reading_time, publication,claps  ")
-//      .load()
     val df1 = spark.read
       .format("com.milvus.spark.connector.MilvusTableProvider")
       .option("spark.milvus.uri", "https://in03-4deca087036f63f.api.gcp-us-west1.zillizcloud.com")
@@ -198,21 +189,6 @@ object Main{
         .show(454404, false)
       ))
     println(df1.count())
-//      println(spark.time(spark.read
-//        .format("com.milvus.spark.connector.MilvusTableProvider")
-//        .option("spark.milvus.uri", "https://in03-4deca087036f63f.api.gcp-us-west1.zillizcloud.com")
-//        .option("spark.milvus.token", "33a6ca21413fd126785a65baa24f2f09afd4976ab61004a60429ebb43d66e5fb6b19d80effac2f93d3a1f5a60d06c0121ff50010")
-//        .option("spark.milvus.collectionName", "search_article_in_medium")
-//        .option("spark.milvus.numPartitions", 3)
-//        .option("spark.milvus.predicateFilter", "publication==\"The Startup\"")
-//        .option("spark.milvus.fields", "id,reading_time, publication,claps  ")
-//        .load()))
-//    println("Num Partitions: " + df.rdd.getNumPartitions)
-////    df.show()
-//    println(df.count())
-//    df.rdd.mapPartitions(iter => Iterator(iter.size)).collect().zipWithIndex.foreach { case (count, index) =>
-//      println(s"Partition $index has $count records.")
-//    }
   }
 
   def testManagedMilvus2(): Unit = {
