@@ -14,7 +14,7 @@ case class MilvusScanPartitionReader(conf: MilvusConnectorConf, partition: Input
   private var closed: Boolean = false
   private val collectionSchema = partition.asInstanceOf[MilvusPartition].collectionSchema
   private lazy val client: MilvusClient = {
-    MilvusClient(conf.host, conf.port)
+    MilvusClient(conf.uri, conf.port, conf.token)
   }
 
   // I'm not sure if you need this, or if you can just maintain a reference to the iterator
